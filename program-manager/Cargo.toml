@@ -1,0 +1,19 @@
+[package]
+name = "program-manager"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+super-lib = { path = "../super-lib" }
+
+
+[features]
+default = ["virtual", "executor", "super"]
+virtual = ["super-lib/virtual"]
+executor= ["super-lib/executor"]
+super = ["super-lib/super"]

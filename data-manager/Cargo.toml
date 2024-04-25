@@ -1,0 +1,18 @@
+[package]
+name = "data-manager"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+borsh= { workspace = true }
+num-derive = { workspace = true }
+num-traits = { workspace = true }
+super-lib = { path = "../super-lib", features = ["super"]}
+redb = { workspace="true" }
+serde = { workspace="true" }
+base64 = { workspace="true" }

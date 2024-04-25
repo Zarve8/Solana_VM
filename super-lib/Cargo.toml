@@ -1,0 +1,23 @@
+[package]
+name = "super-lib"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+borsh= { workspace = true }
+num-derive = { workspace = true }
+num-traits = { workspace = true }
+bs58 = { workspace = true }
+
+
+[features]
+default = ["virtual", "executor", "super"]
+virtual = []
+executor= []
+super = []
+
