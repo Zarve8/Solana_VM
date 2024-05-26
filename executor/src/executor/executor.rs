@@ -1,7 +1,6 @@
 use super_lib::prelude::*;
 use crate::executor::state::ExecutorState;
 use crate::executor::stack::ExecutorStack;
-use crate::system_program::system_processor::system_processor;
 use crate::system_program::utils::SYSTEM_PROGRAM;
 
 
@@ -66,12 +65,7 @@ impl Executor {
                     stack_height: self.stack.depth() + 1,
                 });
                 drop(transfer);
-                if program_id.eq(&SYSTEM_PROGRAM) {
-                    self.process_system_cpi( instruction, accounts, signed);
-                }
-                else {
-                    self.process_cpi(program_id, instruction, accounts, signed);
-                }
+                self.process_cpi(program_id, instruction, accounts, signed);
                 Ok(true)
             }
             SuperSysCall::Log { message } => {
@@ -101,27 +95,6 @@ impl Executor {
         });
     }
 
-    fn process_system_cpi(&mut self, instruction: Vec<u8>, accounts: Vec<SuperKey>, signed: Option<SuperKey>) {
-        let mut signers = self.stack.get_last_signers().clone();
-        match signed {
-            None => {},
-            Some(signer) => { signers.insert(signer); }
-        };
-        let result = system_processor(
-            self.state.construct_transfer(&accounts, &signers),
-            &instruction,
-            &self.vars,
-            &mut self.reported);
-        match result {
-            Ok(result_transfer) => {
-                self.process_cpi_finish(&SYSTEM_PROGRAM, None, result_transfer);
-            },
-            Err(error) => {
-                self.process_cpi_finish(&SYSTEM_PROGRAM, Some(crate::system_program::utils::convert_system_error(error)), SuperTransfer::empty());
-            }
-        }
-    }
-
     fn process_cpi_finish(&mut self, called_id: &SuperKey, error: Option<u64>, transfer: SuperTransfer) {
         match error {
             None => {
@@ -139,8 +112,8 @@ impl Executor {
                 });
             }
             Some(err_data) => {
-                self.reported.log(format!("Program returned error: \"{}\"", crate::system_program::utils::format_program_error(err_data)));
-                self.stack.pop_program();
+                self.reported.log(format!("Program returned error: {}", crate::system_program::utils::format_program_error(err_data)));
+                // self.stack.pop_program();
                 self.stack.send(SuperSysCall::ProgramFinished {
                     error: Some(err_data),
                     transfer: SuperTransfer::empty(),

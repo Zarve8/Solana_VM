@@ -24,7 +24,7 @@ impl SuperReporter {
     }
 
     pub fn log(&mut self, msg: String) {
-        // println!("{}", msg);
+/*        println!("{}", msg);*/
         self.log_messages.push(msg);
     }
 

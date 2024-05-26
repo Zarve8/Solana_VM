@@ -1,5 +1,5 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use std::io::{Read, Write};
+use std::io::{Read, stderr, Write};
 use std::process::{Child};
 use crate::messenger::utils;
 use crate::messenger::utils::MESSAGE_CODE;
@@ -73,7 +73,18 @@ impl<D> Messenger<D> {
         let mut code = String::new();
         for b in MESSAGE_CODE.iter() {
             let mut c = [0];
-            stdout.read_exact(&mut c).expect("Failed to read code char from pipe");
+            match stdout.read_exact(&mut c) {
+                Ok(_) => {},
+                Err(e) => {
+                    let mut s = String::new();
+                    stdout.read_to_string(&mut s).expect("Failed to read string from pipe");
+                    println!("Out: {}", s);
+                    let mut stderr = self.child.stderr.as_mut().unwrap();
+                    stderr.read_to_string(&mut s).expect("Failed to read string from pipe");
+                    println!("Err: {}", s);
+                    panic!("Failed to read code from pipe");
+                }
+            };
             if c[0] != *b {
                 code.push_str( & match String::from_utf8(Vec::from(c)) {
                     Ok(s) => s,

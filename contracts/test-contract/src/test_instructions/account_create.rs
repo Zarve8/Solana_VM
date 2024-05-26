@@ -13,7 +13,6 @@ use crate::kernel::{
 };
 
 
-
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct MyStorage {
     pub key: Pubkey,
@@ -32,15 +31,7 @@ pub fn create_account<'a>(accounts_iter: &mut Iter<'a, AccountInfo<'a>>, program
     assert(account1_ai.data_len(), 0)?;
     assert(account2_ai.key.to_string(), String::from("72SoBX41P6JbUS47asuvYaRrbofX4gEtM2sA8D1x8hVU"))?;
     assert(account2_ai.data_len(), 0)?;
-    let idx = system_instruction::transfer(
-        payer_ai.key,
-        account1_ai.key,
-        Rent::get()?.minimum_balance(bytes as usize),
-    );
-    invoke(
-        &idx,
-        &[payer_ai.clone(), account1_ai.clone(), system_program.clone()])?;
-    msg!("Account1 funded");
+
     let idx = system_instruction::create_account(
         payer_ai.key,
         account1_ai.key,
@@ -54,15 +45,6 @@ pub fn create_account<'a>(accounts_iter: &mut Iter<'a, AccountInfo<'a>>, program
     assert(account1_ai.data_len(), bytes as usize)?;
     msg!("Account Created");
 
-    let idx = system_instruction::transfer(
-        payer_ai.key,
-        account2_ai.key,
-        Rent::get()?.minimum_balance(bytes as usize),
-    );
-    invoke(
-        &idx,
-        &[payer_ai.clone(), account2_ai.clone(), system_program.clone()])?;
-    msg!("Account2 funded");
     let (_key, bump) = Pubkey::find_program_address(&[
         b"my account",
         program_id.as_ref()

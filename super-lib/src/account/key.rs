@@ -45,4 +45,8 @@ impl SuperKey {
     pub fn system_program() -> Self {
         SuperKey([0; 32])
     }
+
+    pub fn faucet() -> Self {
+        SuperKey([0; 32])
+    }
 }

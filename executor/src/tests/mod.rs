@@ -38,8 +38,15 @@ mod test {
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);
@@ -65,8 +72,15 @@ mod test {
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);
@@ -92,8 +106,15 @@ mod test {
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);
@@ -119,13 +140,20 @@ mod test {
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);
     }
-
+    #[test]
     fn sysvars_read_run() {
         let state = SuperState {
             id: 0,
@@ -147,13 +175,19 @@ mod test {
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);
     }
-
 
     #[test]
     fn account_create() {
@@ -185,8 +219,15 @@ mod test {
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);
@@ -203,7 +244,7 @@ mod test {
             },
             accounts: Vec::from([
                 (SuperMeta{address: ACCOUNT1, is_signer: true, writable: true, executable: false, owner: SYSTEM_PROGRAM.clone()},
-                 SuperAccount{lamports: 1000000, data: Vec::new()}),
+                 SuperAccount{lamports:  2000001, data: Vec::new()}),
                 (SuperMeta{address: ACCOUNT2, is_signer: false, writable: true, executable: false, owner: SYSTEM_PROGRAM.clone()},
                  SuperAccount{lamports: 101, data: vec![0; 40]}),
                 (SuperMeta{address: PROGRAM_ID, is_signer: false, writable: false, executable: true, owner: SYSTEM_PROGRAM.clone()},
@@ -213,15 +254,22 @@ mod test {
             ])
         };
         let instr = SuperInstruction {
-            program: 3,
+            program: 2,
             accounts: Vec::from([1, 0, 3]),
             data: Vec::from([4, 0, 1, 0, 0]),
         };
         let tx = SuperTransaction {
             instructions: Vec::from([instr]),
             state,
+            payer: 0,
         };
         let reporter = execute(tx);
+        match reporter.error {
+            Some(code) => {
+                panic!("Failed with code: {}", code);
+            },
+            None => {}
+        }
         println!("Result: {:?}", reporter.error);
         #[cfg(feature = "reported")]
         print!("Reporter: {:?}", reporter);

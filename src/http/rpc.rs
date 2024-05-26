@@ -11,6 +11,7 @@ use crate::http::interfaces:: {
         optional::OptionalParams
     }
 };
+use crate::http::interfaces::get_minimum_balance_for_rent_exempt_request::GetMinimumBalanceForRentExemptionRequest;
 use crate::http::interfaces::get_signature_statuses::GetSignatureStatusesRequest;
 use crate::http::interfaces::get_transaction::GetTransactionRequest;
 use crate::http::parse_params::parse_params;
@@ -19,6 +20,8 @@ use crate::http::routes::{
     get_balance::get_balance,
     get_block_height::get_block_height
 };
+use crate::http::routes::get_latest_blockhash::get_latest_blockhash;
+use crate::http::routes::get_minimum_balance_for_rent_exemption::get_minimum_balance_for_rent_exemption;
 use crate::http::routes::get_signature_statuses::get_signature_statuses;
 use crate::http::routes::get_transaction::get_transaction;
 
@@ -51,6 +54,13 @@ pub async fn rpc(body: web::Json<BaseHttpRequest>) -> HttpResponse {
             "getBlockHeight" => {
                 get_block_height().await
             },
+            "getLatestBlockhash" => {
+                pack_context(get_latest_blockhash().await)
+            },
+            "getMinimumBalanceForRentExemption" => {
+                let (request, optional) = parse_params::<GetMinimumBalanceForRentExemptionRequest>(body.params.clone().unwrap());
+                get_minimum_balance_for_rent_exemption(request).await
+            }
             "getTransaction" => {
                 let (request, optional) = parse_params::<GetTransactionRequest>(body.params.clone().unwrap());
                 get_transaction(&request, OptionalParams::from_option(optional)).await

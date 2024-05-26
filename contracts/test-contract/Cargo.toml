@@ -1,5 +1,5 @@
 [package]
-name = "contract"
+name = "test-contract"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,7 +11,7 @@ crate-type = ["cdylib", "lib"]
 [dependencies]
 borsh = "0.9.3"
 thiserror = "1.0.47"
-solana-program = {path = "../sdk", features = ["solvm"]}
+solana-program = {path = "../../sdk", features = ["solvm"]}
 
 
 [dependencies.num-derive]

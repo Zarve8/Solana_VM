@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
-use super_lib::prelude::{SuperVars, VMID};
-use crate::prelude::{DataManager, StateManager};
+use super_lib::prelude::{SuperKey, SuperVars, VMID};
+use crate::prelude::{AccountManager, AccountMeta, DataManager, StateManager};
 use borsh::{BorshDeserialize, BorshSerialize};
 
 
@@ -14,11 +14,15 @@ pub struct VMState {
 
 impl VMState {
     pub fn new() -> Self {
+        Self::new_with_id(0)
+    }
+
+    pub fn new_with_id(id: VMID) -> Self {
         VMState {
-            id: 0,
+            id,
             lamports_per_signature: 5000,
             vars: SuperVars::default(),
-            blockhash: String::new()
+            blockhash: String::from("EkSnNWid2cvwEVnVx9aBqawnmiCNiDgp3gUdkDPTKN1N")
         }
     }
 
@@ -34,5 +38,15 @@ impl VMState {
         let manager = data_manager.read().expect("Failed to access Global Data");
         manager.set_state(&self);
         println!("Saved VM State");
+    }
+
+    pub fn initialize(&self, manager: &DataManager) {
+        manager.set_account_meta(&SuperKey::faucet().to_string(), &AccountMeta {
+            address: SuperKey::faucet(),
+            owner: SuperKey::system_program(),
+            executable: false,
+            lamports: 1000000000000000000,
+        });
+        println!("Initialized VM State: {}", self.id);
     }
 }

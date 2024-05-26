@@ -54,7 +54,6 @@ macro_rules! entrypoint {
     };
 }
 
-
 #[macro_export]
 macro_rules! custom_heap_default {
     () => {

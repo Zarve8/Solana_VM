@@ -56,7 +56,7 @@ impl ExecutorState {
         for (key, account) in transfer.accounts.iter() {
             let mut self_account = self.accounts.get_mut(key).unwrap();
             self_account.data = account.data.clone();
-            self_account.lamports = account.lamports;
+            // self_account.lamports = account.lamports;
         }
     }
 
@@ -66,7 +66,7 @@ impl ExecutorState {
                 let transferred_account = transfer.accounts.get(&meta.address).unwrap();
                 let mut self_account = self.accounts.get_mut(&meta.address).unwrap();
                 self_account.data = transferred_account.data.clone();
-                self_account.lamports = transferred_account.lamports;
+                // self_account.lamports = transferred_account.lamports;
             }
         }
     }

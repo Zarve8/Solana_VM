@@ -34,4 +34,19 @@ impl SuperTransfer {
             .map(|meta| meta.address.to_owned())
             .collect()
     }
+
+    pub fn force_update(&mut self, datas: HashMap<SuperKey, &Vec<u8>>, owners: HashMap<SuperKey, SuperKey>) {
+        for meta in self.metas.iter_mut() {
+            if owners.contains_key(&meta.address) {
+                let owner_key = owners.get(&meta.address).unwrap();
+                meta.owner = owner_key.clone();
+            }
+        }
+        for (key, data) in datas.iter() {
+            if self.accounts.contains_key(key) {
+                let mut acc = self.accounts.get_mut(key).unwrap();
+                acc.data = (*data).clone();
+            }
+        }
+    }
 }

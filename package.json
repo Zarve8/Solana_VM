@@ -1,0 +1,23 @@
+{
+  "name": "solana_seam",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:token": "ts-node ./scripts/token-test.ts",
+    "test:load": "ts-node ./scripts/load-test.ts"
+  },
+  "dependencies": {
+    "@solana/spl-token": "0.3.8",
+    "@solana/web3.js": "1.87.3",
+    "big-integer": "1.6.51",
+    "bn": "1.0.5"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "5.2.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

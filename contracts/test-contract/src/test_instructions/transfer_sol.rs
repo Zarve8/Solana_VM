@@ -19,6 +19,9 @@ pub fn transfer_sol<'a>(accounts_iter: &mut Iter<'a, AccountInfo<'a>>, _program_
         to_ai.key,
         amount,
     );
+    let v: Vec<u8> = idx.data.clone();
+    msg!("IDX: {:?}", idx);
+    // msg!("{:?}", idx.data);
     invoke(
         &idx,
         &[from_ai.clone(), to_ai.clone(), system_program.clone()])?;

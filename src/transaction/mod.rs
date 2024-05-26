@@ -1,16 +1,18 @@
 use std::collections::VecDeque;
-use super_lib::prelude::{SuperInstruction, SuperKey, SuperReporter, SuperTransaction};
+use super_lib::prelude::{SuperAccount, SuperInstruction, SuperKey, SuperReporter, SuperTransaction};
 use crate::transaction::types::message::Message;
 use std::future::Future;
 use std::process::{Command, Stdio};
 use futures::channel::oneshot;
-use data_manager::prelude::{TransactionData};
+use data_manager::prelude::{AccountData, AccountMeta, TransactionData};
 use crate::global::data_manager::GLOBAL_DATA;
 use crate::global::state::GLOBAL_STATE;
 use data_manager::prelude::TransactionManager;
 use std::time::{SystemTime, UNIX_EPOCH};
 use sha256::{digest, try_digest};
 use piper::messenger::spawner_messenger::Messenger as SpawnerMessenger;
+use data_manager::prelude::AccountManager;
+use hex;
 
 pub mod types;
 
@@ -79,6 +81,7 @@ impl TransactionStack {
                 match reporter.error {
                     None => {
                         println!("Report: {:?}", reporter);
+                        Self::update_accounts(&reporter);
                         let time = Self::get_time();
                         let tx_data = TransactionData::from_reporter(
                             &tx,
@@ -130,7 +133,9 @@ impl TransactionStack {
     }
 
     fn next_hash(hash: &String) -> String {
-        digest(hash.clone())
+        let hash_string = digest(hash.clone());
+        let decoded = hex::decode(hash_string).expect("Decoding failed");
+        bs58::encode(decoded).into_string()
     }
 
     fn get_time() -> u64 {
@@ -139,5 +144,20 @@ impl TransactionStack {
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
         since_the_epoch.as_secs()
+    }
+
+    fn update_accounts(reporter: &SuperReporter) {
+        let manager = GLOBAL_DATA.read().expect("Failed to read GLOBAL DATA");
+        for (meta, account) in reporter.changed_accounts.iter() {
+            manager.set_account_data_by_key(&meta.address, &AccountData {
+                bytes: account.data.to_owned(),
+            });
+            manager.set_account_meta_by_key(&meta.address, &AccountMeta {
+                address: meta.address.clone(),
+                owner: meta.owner.clone(),
+                executable: meta.executable.clone(),
+                lamports: account.lamports.clone(),
+            })
+        }
     }
 }

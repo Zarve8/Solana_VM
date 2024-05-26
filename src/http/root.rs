@@ -1,15 +1,20 @@
+use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use actix_web::{HttpResponse};
 use actix_web::{post, web};
 use serde_json::{json, Value};
-use super_lib::prelude::{SuperKey, SuperReporter};
+use serde_json::Value::Null;
+use data_manager::prelude::VMState;
+use super_lib::prelude::{SuperKey, SuperReporter, VMID};
 use crate::global::transaction::GLOBAL_EXECUTOR;
 use crate::transaction::TransactionOutput;
 use crate::transaction::types::compiled_instruction::CompiledInstruction;
 use crate::transaction::types::hash::Hash;
 use crate::transaction::types::message::Message;
 use crate::transaction::types::message_header::MessageHeader;
+use crate::global::data_manager::GLOBAL_DATA;
+use data_manager::prelude::StateManager;
 
 
 #[post("/super/send_transaction")]
@@ -49,16 +54,16 @@ pub async fn send_transaction(body: web::Json<SSendTransactionRequest>) -> HttpR
     match result {
         Ok(result) => {
             HttpResponse::Ok()
-            .body(result)
+            .body(json!({
+                "result": result
+            }).to_string())
         }
         Err(reporter) => {
             HttpResponse::ExpectationFailed()
                 .body(construct_error_report(reporter).to_string())
         }
     }
-
 }
-
 
 pub fn construct_error_report(reporter: SuperReporter) -> Value {
     json!({
@@ -77,41 +82,6 @@ pub fn construct_error_report(reporter: SuperReporter) -> Value {
     })
 }
 
-
-/*
-{
-    "jsonrpc": "2.0",
-    "error": {
-        "code": -32002,
-        "message": "Transaction simulation failed: Error processing Instruction 1: invalid instruction data",
-        "data": {
-            "accounts": null,
-            "err": {
-                "InstructionError": [
-                    1,
-                    "InvalidInstructionData"
-                ]
-            },
-            "innerInstructions": null,
-            "logs": [
-                "Program CscAmJEyqL2M3whNUkbjDTcyUUdp3EuvJv1GXDyPuQEA invoke [1]",
-                "Program log: Earned 9000 of Oil",
-                "Program log: Gathered Region: 1059398392, 1231174896",
-                "Program CscAmJEyqL2M3whNUkbjDTcyUUdp3EuvJv1GXDyPuQEA consumed 29683 of 400000 compute units",
-                "Program CscAmJEyqL2M3whNUkbjDTcyUUdp3EuvJv1GXDyPuQEA success",
-                "Program CscAmJEyqL2M3whNUkbjDTcyUUdp3EuvJv1GXDyPuQEA invoke [1]",
-                "Program log: Account for Region: 1059398392, 1231174896 not provided",
-                "Program CscAmJEyqL2M3whNUkbjDTcyUUdp3EuvJv1GXDyPuQEA consumed 9561 of 370317 compute units",
-                "Program CscAmJEyqL2M3whNUkbjDTcyUUdp3EuvJv1GXDyPuQEA failed: invalid instruction data"
-            ],
-            "returnData": null,
-            "unitsConsumed": 39244
-        }
-    },
-    "id": "473895b4-02f0-4ec4-a015-84c19af23eaa"
- */
-
-
 #[derive(Deserialize, Serialize, Debug)]
 pub struct SSendTransactionRequest {
     accounts: Vec<String>,
@@ -126,4 +96,68 @@ pub struct SInstruction{
     program_id: u8,
     accounts: Vec<u8>,
     data: Vec<u8>
+}
+
+
+
+#[post("/super/airdrop")]
+pub async fn airdrop(body: web::Json<SAirdropRequest>) -> HttpResponse {
+    println!("=========={body:?}=========");
+    let msg = Message {
+        header: MessageHeader {
+            num_required_signatures: 1,
+            num_readonly_unsigned_accounts: 0,
+            num_readonly_signed_accounts: 0,
+        },
+        account_keys: vec![SuperKey::system_program(), SuperKey::from_string(&body.to)],
+        recent_blockhash: Hash::new(&[0; 32]),
+        signers: HashSet::from([SuperKey::system_program()]),
+        writables: HashSet::from([SuperKey::system_program(), SuperKey::from_string(&body.to)]),
+        instructions: vec![CompiledInstruction {
+            program_id_index: 0,
+            accounts: vec![1, 0, 0],
+            data: vec![4, 99, 0, 0, 0],
+        }],
+        payer: 0
+    };
+    println!("New Message Constructed");
+    let async_result = {
+        let mut stack = GLOBAL_EXECUTOR.lock().expect("Failed to access stack");
+        stack.push(msg)
+    };
+    let result = async_result.await.expect("Failed to receive message from oneshot channel");
+    match result {
+        Ok(result) => {
+            HttpResponse::Ok()
+                .body(result)
+        }
+        Err(reporter) => {
+            HttpResponse::ExpectationFailed()
+                .body(construct_error_report(reporter).to_string())
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SAirdropRequest{
+    to: String
+}
+
+
+
+#[post("/new")]
+pub async fn new_vm(body: web::Json<SNewVMRequest>) -> HttpResponse {
+    println!("=========={body:?}=========");
+    let state = VMState::new_with_id(body.id);
+    {
+        let data_manager = GLOBAL_DATA.read().expect("Failed to access Global Data on load");
+        state.initialize(&data_manager);
+        data_manager.set_state(&state);
+    }
+    HttpResponse::Ok().body("Ok")
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SNewVMRequest{
+    id: VMID
 }

@@ -1,0 +1,25 @@
+[package]
+name = "spl-token"
+version = "4.0.1"
+description = "Solana Program Library Token"
+authors = ["Solana Labs Maintainers <maintainers@solanalabs.com>"]
+edition = "2021"
+
+[dependencies]
+solana-program = { path = "../../sdk" }
+arrayref = "0.3.7"
+bytemuck = "1.15.0"
+num-derive = "0.4"
+num-traits = "0.2"
+num_enum = "0.7.2"
+thiserror = "1.0"
+
+[features]
+no-entrypoint = []
+test-sbf = []
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
